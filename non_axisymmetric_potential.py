@@ -21,12 +21,24 @@ def create_initial_values(x_init):
     return Y0
 
 def compute_energy(Y0):
+    """
+    The energy of the system is described by the kinetic energy term and the
+    potential for a non-axismmetric potential in cartesian coordinates.
+    """
+
     energy = 0.5*(Y0[1]**2. + Y0[3]**2.) + np.log(np.sqrt(Y0[0]**2 + Y0[2]**2)) + \
             np.log(1 - (eccentricity*Y0[0])/(np.sqrt(Y0[0]**2 + Y0[2]**2)))
 
     return energy
 
 def compute_vy(x_init):
+    """
+    This is derived from setting the energy of the system to be a certain value.
+
+    It'd be better to leave this general and have it compute from the inital values
+    vector and pass energy as an argument.
+    """
+
     Y0 = create_initial_values(x_init)
     Y0[3] = (2*(-1 - 0.5*np.log(Y0[0]**2) - np.log(1 - (eccentricity))))**(1/2.)
 
@@ -43,13 +55,20 @@ def derivs(t, Y0):
 def create_sos(x_initials):
     """
     Create a surface of section plot for each initial x-position.
-    """
-    new_Y0 = compute_vy(x_initials)
-    yout, tout = bsint.bsintegrate(derivs,new_Y0,t0,t1,tacc=1e-14,mxstep=20000)
-    pick = np.where(np.abs(yout[:,2]) < 1.e-3)
-    plt.plot(yout[pick,0].T, yout[pick,1].T, ls='none', marker='.', markersize=2)
 
-x_initials = np.linspace(0.01, 10, 1e3)
+    bsint will return a nD array of:
+    x-position, x-velocity, y-position, y-velocity
+    """
+
+    inital_conds = compute_vy(x_initials)
+    out, tout = bsint.bsintegrate(derivs, initial_conds, t0, t1, tacc=1e-14, mxstep=20000)
+    pick = np.where(np.abs(out[:,2]) < 1.e-3)
+    plt.plot(out[pick,0].T, out[pick,1].T, ls='none', marker='.', markersize=2)
+
+"""
+Sorry about the for-loop - will fix.
+"""
+x_initials = np.linspace(0.01, 0.6, 20)
 for value in x_initials:
     create_sos(value)
 
