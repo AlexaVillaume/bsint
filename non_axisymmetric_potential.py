@@ -60,14 +60,16 @@ def create_sos(x_initials):
     x-position, x-velocity, y-position, y-velocity
     """
 
-    inital_conds = compute_vy(x_initials)
+    initial_conds = compute_vy(x_initials)
     out, tout = bsint.bsintegrate(derivs, initial_conds, t0, t1, tacc=1e-14, mxstep=20000)
-    pick = np.where(np.abs(out[:,2]) < 1.e-3)
+    pick = []
+    for i in range(len(out[:,2])):
+        if out[:,2][i] > 1.e-3 and out[:,2][i-1] < 1.e-3:
+            pick.append(i)
+    #pick = np.where(np.abs(out[:,2]) < 1.e-3)
+    print out[pick,0]
     plt.plot(out[pick,0].T, out[pick,1].T, ls='none', marker='.', markersize=2)
 
-"""
-Sorry about the for-loop - will fix.
-"""
 x_initials = np.linspace(0.01, 0.6, 20)
 for value in x_initials:
     create_sos(value)
