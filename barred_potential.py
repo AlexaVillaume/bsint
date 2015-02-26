@@ -24,6 +24,15 @@ def create_initial_values(x_init):
 
     return Y0
 
+def co_rotation():
+    return np.sqrt(V0_sqr - (R_c**2)*(Omega_b**2))/Omega_b
+
+def inner_linblad():
+    return -(-np.sqrt(2)*np.sqrt(V0_sqr) + 2*np.sqrt(V0_sqr)/2*Omega_b
+
+def outer_liblad():
+    return (np.sqrt(2)*np.sqrt(V0_sqr) + 2*np.sqrt(V0_sqr)/2*Omega_b
+
 def compute_vy(x_init):
     """
     Use the rotation curve to get initial y-velocity
@@ -67,7 +76,7 @@ def integrate(x_initial, ax, label):
 
 if __name__ == '__main__':
     fig = plt.figure(figsize=(22,8))
-    x_initials = [-0.95, 0.23, 1.37]
+    x_initials = [cortation(), inner_linblad(), outer_linblad()]
     labels = ['Co-rotation', 'Inner Linblad', 'Outer Linblad']
     for i, (x_init, label) in enumerate(zip(x_initials, labels)):
         ax = plt.subplot(1,3,i)
