@@ -9,10 +9,11 @@ import bsint
 
 num_bodies = 1      # See pythagorean_three_body.py
 t0 = 0
-t1 = 1e6            # endpoints for the time array
+t1 = 10e2            # endpoints for the time array
 ecce = np.sqrt(0.01)
 R_c = 0.5           # don't know what this represents
-V_0 = 1    # don't know what this represents
+V0_sqr = 1    # don't know what this represents
+Omega_b = 1.25
 
 def create_initial_values(x_init):
     Y0 = np.zeros((4*num_bodies))
@@ -23,49 +24,17 @@ def create_initial_values(x_init):
 
     return Y0
 
-def galaxy_potential(init_conds):
-
-    r_sqr = init_conds[0]**2 + init_conds[2]**2
-    gal_pot = 0.5*V_0*np.log(R_c**2 + r_sqr)*(1 + (ecce**2)*((init_conds[0]**2 - init_conds[2]**2)/r_sqr))
-
-    return gal_pot
-
-def bar_potential(time, init_conds):
-    """
-    The bar has a seperate influence on the test particle, distince from
-    that of the potential of the galaxy.
-
-    See the solution set for winter term 2015 Galaxy Dynamics problem set 3
-    for derivation of this term.
-    """
-
-    bar_strength = 1.25
-    other_thing = (1e-2)**2
-    r = np.sqrt(init_conds[0]**2 + init_conds[2]**2)
-    # not quite sure if this will work as a seperate function with the time
-    # dependency
-    bar_pot = other_thing*(((init_conds[0]**2 - \
-              init_conds[1]**2)/r)*np.cos(bar_strength*time) - \
-              ((2*init_conds[0]*init_conds[2])/r)*(np.sin(bar_strength*time)))
-
-    return bar_pot
-
 def compute_vy(x_init):
     """
-    Set the energy of the system to a certain value and compute
-    the y velocity given that energy.
+    Use the rotation curve to get initial y-velocity
     """
 
     init_conds = create_initial_values(x_init)
-    bar_pot = bar_potential(t0, init_conds)
-    gal_pot = galaxy_potential(init_conds)
-    energy = 5
-
-    init_conds[3] = (2*(energy - bar_pot - gal_pot))**0.5 - init_conds[1]
+    init_conds[3] = init_conds[0]*Omega_b
 
     return init_conds
 
-def derivs(t, Y0):
+def derivs(t, init_conds):
     """
     See the solution set for winter term 2015 Galaxy Dynamics problem set 3
     for derivation of this term.
@@ -75,22 +44,34 @@ def derivs(t, Y0):
     r_b = init_conds[0]**2 - init_conds[2]**2
     term1 = R_c**2 + r_sqr
 
-    #bar_pot = bar_potential()
 
-    x_acc = -(V_0**2 * ()/term1 + 0.5*V_0**2 *()*np.log(term1))
+    x_acc = -(V0_sqr*init_conds[0]*(ecce**2 * (r_b/r_sqr) + 1)/term1) + \
+            (0.5*V0_sqr)*(((2*(ecce**2)*init_conds[0])/r_sqr) - \
+            (2*(ecce**2)*init_conds[0]*r_b)/r_sqr**2)*np.log(term1)
 
-    #y_acc =
+    y_acc = -(V0_sqr*init_conds[2]*(ecce**2 * (r_b/r_sqr) + 1)/term1) + \
+            (0.5*V0_sqr)*(((2*(ecce**2)*init_conds[2])/r_sqr) - \
+            (2*(ecce**2)*init_conds[2]*r_b)/r_sqr**2)*np.log(term1)
 
-    #return np.array([Y0[1], x_acc, Y0[3], y_acc])
 
-    return 0
+    return np.array([init_conds[1], x_acc, init_conds[3], y_acc])
 
-def integrate(x_initial):
-    initial_conds = compute_vy(x_initial)
-    #out, tout = bsint.bsintegrate(derivs, initial_conds, t0, t1, tacc=1e-14, mxstep=20000)
+def integrate(x_initial, ax, label):
+    init_conds = compute_vy(x_initial)
+    out, tout = bsint.bsintegrate(derivs, init_conds, t0, t1, tacc=1e-14, mxstep=20000)
+    ax.plot(out[:,0], out[:,2], color='#424242', alpha=0.5)
+    ax.annotate(label, xy=(1,0), xycoords='axes fraction', xytext=(0.95, 0.95),
+                ha='right', va='top', fontsize=12)
+    ax.set_xlabel('x-position', fontsize=16)
+    ax.set_ylabel('y-position', fontsize=16)
 
 if __name__ == '__main__':
-    x_initial = 1
-    integrate(x_initial)
-
+    fig = plt.figure(figsize=(22,8))
+    x_initials = [-0.95, 0.23, 1.37]
+    labels = ['Co-rotation', 'Inner Linblad', 'Outer Linblad']
+    for i, (x_init, label) in enumerate(zip(x_initials, labels)):
+        ax = plt.subplot(1,3,i)
+        integrate(x_init, ax, label)
+    plt.tight_layout()
+    plt.show()
 
