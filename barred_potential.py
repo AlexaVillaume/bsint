@@ -10,7 +10,7 @@ import bsint
 
 num_bodies = 1      # See pythagorean_three_body.py
 t0 = 0
-t1 = 10e6            # endpoints for the time array
+t1 = 10e2            # endpoints for the time array
 ecce = np.sqrt(0.01)
 R_c = 0.5           # don't know what this represents
 V0_sqr = 1    # don't know what this represents
@@ -28,19 +28,18 @@ def create_initial_values(x_init):
 def co_rotation():
     return np.sqrt(V0_sqr - (R_c**2)*(Omega_b**2))/Omega_b
 
-def outer_linblad():
-    #return ()/()
-    return 0
+def outer_linblad(R0):
+    return (2*V0_sqr*(2*R_c**2 + R0**2))/(R_c**2 + R0**2)**2 - \
+            4*(np.sqrt(V0_sqr/(R_c**2 + R0**2)) - Omega_b)**2
 
-
-
-def compute_vy(x_init):
+def compute_vy(x_init, label):
     """
     Use the rotation curve to get initial y-velocity
     """
 
     init_conds = create_initial_values(x_init)
-    #init_conds[3] = init_conds[0]*Omega_b
+    if label == 'Outer Linblad':
+        init_conds[3] = init_conds[0]*np.sqrt(V0_sqr/(R_c**2 + init_conds[0]**2 )) - init_conds[0]*Omega_b
 
     return init_conds
 
@@ -67,7 +66,7 @@ def derivs(t, init_conds):
     return np.array([init_conds[1], x_acc, init_conds[3], y_acc])
 
 def integrate(x_initial, ax, label):
-    init_conds = compute_vy(x_initial)
+    init_conds = compute_vy(x_initial, label)
     out, tout = bsint.bsintegrate(derivs, init_conds, t0, t1, tacc=1e-14, mxstep=20000)
     ax.plot(out[:,0], out[:,2], color='#424242', alpha=0.5)
     ax.annotate(label, xy=(1,0), xycoords='axes fraction', xytext=(0.95, 0.95),
@@ -77,7 +76,7 @@ def integrate(x_initial, ax, label):
 
 if __name__ == '__main__':
     fig = plt.figure(figsize=(18,8))
-    x_initials = [co_rotation(), 1.3083]
+    x_initials = [co_rotation(), brentq(outer_linblad, 0, 10)]
     labels = ['Co-rotation', 'Outer Linblad']
     for i, (x_init, label) in enumerate(zip(x_initials, labels)):
         ax = plt.subplot(1,2,i)
