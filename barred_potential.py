@@ -5,11 +5,12 @@ For problem 2 on problem set 3 of Winter 2015 Galaxy Dynamics class.
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import brentq
 import bsint
 
 num_bodies = 1      # See pythagorean_three_body.py
 t0 = 0
-t1 = 10e2            # endpoints for the time array
+t1 = 10e6            # endpoints for the time array
 ecce = np.sqrt(0.01)
 R_c = 0.5           # don't know what this represents
 V0_sqr = 1    # don't know what this represents
@@ -27,11 +28,11 @@ def create_initial_values(x_init):
 def co_rotation():
     return np.sqrt(V0_sqr - (R_c**2)*(Omega_b**2))/Omega_b
 
-def inner_linblad():
-    return -(-np.sqrt(2)*np.sqrt(V0_sqr) + 2*np.sqrt(V0_sqr)/2*Omega_b
+def outer_linblad():
+    #return ()/()
+    return 0
 
-def outer_liblad():
-    return (np.sqrt(2)*np.sqrt(V0_sqr) + 2*np.sqrt(V0_sqr)/2*Omega_b
+
 
 def compute_vy(x_init):
     """
@@ -39,7 +40,7 @@ def compute_vy(x_init):
     """
 
     init_conds = create_initial_values(x_init)
-    init_conds[3] = init_conds[0]*Omega_b
+    #init_conds[3] = init_conds[0]*Omega_b
 
     return init_conds
 
@@ -75,11 +76,11 @@ def integrate(x_initial, ax, label):
     ax.set_ylabel('y-position', fontsize=16)
 
 if __name__ == '__main__':
-    fig = plt.figure(figsize=(22,8))
-    x_initials = [cortation(), inner_linblad(), outer_linblad()]
-    labels = ['Co-rotation', 'Inner Linblad', 'Outer Linblad']
+    fig = plt.figure(figsize=(18,8))
+    x_initials = [co_rotation(), 1.3083]
+    labels = ['Co-rotation', 'Outer Linblad']
     for i, (x_init, label) in enumerate(zip(x_initials, labels)):
-        ax = plt.subplot(1,3,i)
+        ax = plt.subplot(1,2,i)
         integrate(x_init, ax, label)
     plt.tight_layout()
     plt.show()
