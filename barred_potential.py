@@ -10,7 +10,7 @@ import bsint
 
 num_bodies = 1      # See pythagorean_three_body.py
 t0 = 0
-t1 = 10e2            # endpoints for the time array
+t1 = 10e0            # endpoints for the time array
 ecce = np.sqrt(0.01)
 R_c = 0.5           # don't know what this represents
 V0_sqr = 1    # don't know what this represents
@@ -53,15 +53,22 @@ def derivs(t, init_conds):
     r_b = init_conds[0]**2 - init_conds[2]**2
     term1 = R_c**2 + r_sqr
 
+    print init_conds
+    coriolis = np.cross([init_conds[1], init_conds[3], 0], [0, 0, Omega_b])
+    centrifugal = np.cross(np.cross([0, 0, Omega_b], [init_conds[0], init_conds[2], 0]), [0, 0, Omega_b])
 
+
+    print coriolis, centrifugal
+    #sys.exit()
     x_acc = -(V0_sqr*init_conds[0]*(ecce**2 * (r_b/r_sqr) + 1)/term1) + \
             (0.5*V0_sqr)*(((2*(ecce**2)*init_conds[0])/r_sqr) - \
-            (2*(ecce**2)*init_conds[0]*r_b)/r_sqr**2)*np.log(term1)
+            (2*(ecce**2)*init_conds[0]*r_b)/r_sqr**2)*np.log(term1) + \
+            coriolis[0] + centrifugal[0]
 
     y_acc = -(V0_sqr*init_conds[2]*(ecce**2 * (r_b/r_sqr) + 1)/term1) + \
             (0.5*V0_sqr)*(((2*(ecce**2)*init_conds[2])/r_sqr) - \
-            (2*(ecce**2)*init_conds[2]*r_b)/r_sqr**2)*np.log(term1)
-
+            (2*(ecce**2)*init_conds[2]*r_b)/r_sqr**2)*np.log(term1) + \
+            coriolis[1] + centrifugal[1]
 
     return np.array([init_conds[1], x_acc, init_conds[3], y_acc])
 
