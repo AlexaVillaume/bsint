@@ -68,15 +68,16 @@ def derivs(t, init_conds):
 
     return np.array([init_conds[1], x_acc, init_conds[3], y_acc])
 
-def integrate(x_initial, ax, label):
+def integrate(x_initial, ax, label, check=True):
     init_conds = compute_vy(x_initial, label)
-    print label, init_conds
-    #out, tout = bsint.bsintegrate(derivs, init_conds, t0, t1, tacc=1e-14, mxstep=20000)
-    #ax.plot(out[:,0], out[:,2], color='#424242', alpha=0.5)
-    #ax.annotate(label, xy=(1,0), xycoords='axes fraction', xytext=(0.95, 0.95),
-    #            ha='right', va='top', fontsize=12)
-    #ax.set_xlabel('x-position', fontsize=16)
-    #ax.set_ylabel('y-position', fontsize=16)
+    if check:
+        print label, init_conds
+    out, tout = bsint.bsintegrate(derivs, init_conds, t0, t1, tacc=1e-14, mxstep=20000)
+    ax.plot(out[:,0], out[:,2], color='#424242', alpha=0.5)
+    ax.annotate(label, xy=(1,0), xycoords='axes fraction', xytext=(0.95, 0.95),
+                ha='right', va='top', fontsize=24)
+    ax.set_xlabel(r'$x$', fontsize=30)
+    ax.set_ylabel(r'$y$', fontsize=30)
 
 if __name__ == '__main__':
     fig = plt.figure(figsize=(18,8))
